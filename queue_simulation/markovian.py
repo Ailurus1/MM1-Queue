@@ -1,9 +1,8 @@
 """
     Description (TODO)
 """
-import random
-import numpy as np
 import math
+import random
 from typing import Dict, List, Union
 
 
@@ -12,6 +11,15 @@ class Markovian:
         Description (TODO)
     """
 
+    time_in_system: float = 0
+    entry_times: List = []
+    exit_times: List = []
+    queue_sizes: List = []
+    total_sizes: List = []
+    waiting_times: List = []
+    system_times: List = []
+    shift_times: List = []
+
     def __init__(self,
                  lmbda: float,
                  mu: float) -> None:
@@ -19,21 +27,13 @@ class Markovian:
         self.lmbda = lmbda
         self.mu = mu
 
-        self.time_in_system = 0
-        self.entry_times = []
-        self.exit_times = []
-        self.queue_sizes = []
-        self.total_sizes = []
-        self.waiting_times = []
-        self.system_times = []
-
-    def _get_service_time(self) -> float:
+    def get_service_time(self) -> float:
         """
         Description (TODO)
         """
         return random.expovariate(self.mu)
 
-    def _get_entry_time(self) -> float:
+    def get_entry_time(self) -> float:
         """
         Description (TODO)
         """
@@ -46,8 +46,8 @@ class Markovian:
 
         last_entry = 0
 
-        for i in range(number_of_entries):
-            time_between_entries = self._get_entry_time()
+        for _ in range(number_of_entries):
+            time_between_entries = self.get_entry_time()
             self.entry_times.append(last_entry + time_between_entries)
             last_entry += time_between_entries
 
@@ -62,10 +62,10 @@ class Markovian:
 
         self.exit_times = [0] * number_of_queries
         self.shift_times = [0] * number_of_queries
-        self.exit_times[0] = self.entry_times[0] + self._get_service_time()
+        self.exit_times[0] = self.entry_times[0] + self.get_service_time()
 
         for i in range(1, number_of_queries - 1):
-            service_time = self._get_service_time()
+            service_time = self.get_service_time()
             self.shift_times[i] = max(
                 self.exit_times[i - 1], self.entry_times[i])
             self.exit_times[i] = max(
