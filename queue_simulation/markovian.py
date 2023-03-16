@@ -2,7 +2,9 @@
     Description (TODO)
 """
 import random
-from typing import Dict
+import numpy as np
+import math
+from typing import Dict, List, Union
 
 
 class Markovian:
@@ -17,21 +19,13 @@ class Markovian:
         self.lmbda = lmbda
         self.mu = mu
 
-        self.current_customers = 0
-        self.entry_probability = self.lmbda / (self.lmbda + self.mu)
-        self.exit_probability = self.mu / (self.lmbda + self.mu)
-        self.average_waiting_time = 0
-        self.total_waiting_time = 0
-        self.average_queue_size = 0
-        self.total_customers = 0
-        self.customers_per_event = []
-        self.waiting_time_per_customer = []
-        self.waiting_time_queue = []
-
-        self.current_moment = 0
-        self.real_queue = []
-
-        self.event_types = ["service", "entry"]
+        self.time_in_system = 0
+        self.entry_times = []
+        self.exit_times = []
+        self.queue_sizes = []
+        self.total_sizes = []
+        self.waiting_times = []
+        self.system_times = []
 
     def _get_service_time(self) -> float:
         """
@@ -39,59 +33,72 @@ class Markovian:
         """
         return random.expovariate(self.mu)
 
-    def _get_event_type(self) -> str:
+    def _get_entry_time(self) -> float:
         """
         Description (TODO)
         """
-        return random.choices(self.event_types, [self.exit_probability, self.entry_probability])[0]
+        return random.expovariate(self.lmbda)
 
-    def update_prob(self) -> None:
-        """
-        Description (TODO)
-        """
-
-        if self.current_customers == 0:
-            self.entry_probability = 1
-            self.exit_probability = 0
-        else:
-            self.entry_probability = self.lmbda / (self.lmbda + self.mu)
-            self.exit_probability = self.mu / (self.lmbda + self.mu)
-
-    def event(self) -> None:
+    def _generate_entries(self, number_of_entries) -> None:
         """
         Description (TODO)
         """
 
-        self.update_prob()
-        event = self._get_event_type()
+        last_entry = 0
 
-        if event == "entry":
-            self.current_customers += 1
-            self.waiting_time_queue.append(0)
-        else:
-            self.current_customers -= 1
-            service_time = self._get_service_time()
-            self.waiting_time_per_customer.append(
-                self.waiting_time_queue.pop(0))
-            if len(self.waiting_time_queue) > 0:
-                for i in range(len(self.waiting_time_queue)):
-                    self.waiting_time_queue[i] += service_time
+        for i in range(number_of_entries):
+            time_between_entries = self._get_entry_time()
+            self.entry_times.append(last_entry + time_between_entries)
+            last_entry += time_between_entries
 
-        self.customers_per_event.append(self.current_customers)
-
-    def run(self, number_of_iterations: int) -> Dict[str, float]:
+    def run(self, number_of_queries: int) -> Dict[str, Union[float, List[float]]]:
         """
         Description (TODO)
         """
 
         metrics = dict()
 
-        for _ in range(number_of_iterations):
-            self.event()
+        self._generate_entries(number_of_queries)
 
-        metrics["Average Queue Size"] = sum(
-            self.customers_per_event) / number_of_iterations
+        self.exit_times = [0] * number_of_queries
+        self.shift_times = [0] * number_of_queries
+        self.exit_times[0] = self.entry_times[0] + self._get_service_time()
+
+        for i in range(1, number_of_queries - 1):
+            service_time = self._get_service_time()
+            self.shift_times[i] = max(
+                self.exit_times[i - 1], self.entry_times[i])
+            self.exit_times[i] = max(
+                self.exit_times[i - 1], self.entry_times[i]) + service_time
+            self.time_in_system += self.exit_times[i] - self.entry_times[i]
+
+        total_moments = math.trunc(max(self.exit_times))
+
+        self.queue_sizes = [0] * (total_moments + 1)
+        self.total_sizes = [0] * (total_moments + 1)
+        self.waiting_times = [0] * (total_moments + 1)
+        self.system_times = [0] * (total_moments + 1)
+        for i in range(number_of_queries):
+            for j in range(math.ceil(self.entry_times[i]), math.trunc(self.shift_times[i]) + 1):
+                self.queue_sizes[j] += 1
+                self.waiting_times[j] += (j - self.entry_times[i])
+            for j in range(math.ceil(self.entry_times[i]), math.trunc(self.exit_times[i]) + 1):
+                self.total_sizes[j] += 1
+                self.system_times[j] += (j - self.entry_times[i])
+
+        metrics["Average Total Queries in System Per Moment"] = [
+            sum(self.total_sizes[:i]) / (i + 1) for i in range(1, total_moments)]
+        metrics["Average Queue Size Per Moment"] = [
+            sum(self.queue_sizes[:i]) / (i + 1) for i in range(1, total_moments)]
+        metrics["Average System Time Per Moment"] = [
+            sum(self.system_times[:i]) / (i + 1) for i in range(1, total_moments)]
+        metrics["Average Waiting Time Per Moment"] = [
+            sum(self.waiting_times[:i]) / (i + 1) for i in range(1, total_moments)]
+        metrics["Average Queue Size"] = sum(self.queue_sizes) / total_moments
+        metrics["Average Total Queries"] = sum(
+            self.total_sizes) / total_moments
+        metrics["Average System Time"] = self.time_in_system / number_of_queries
         metrics["Average Waiting Time"] = sum(
-            self.waiting_time_per_customer) / len(self.waiting_time_per_customer)
+            self.waiting_times) / total_moments
 
         return metrics
