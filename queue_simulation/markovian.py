@@ -1,5 +1,6 @@
 """
-    Description (TODO)
+Simple M/M/1/inf queue simulation
+See https://en.wikipedia.org/wiki/M/M/1_queue
 """
 import math
 import random
@@ -8,7 +9,10 @@ from typing import Dict, List, Union
 
 class Markovian:
     """
-        Description (TODO)
+    A M/M/1/inf simulating class with implemented entry-service processes
+    with single server and single queue, where arrivals 
+    determined by a Poisson process and job service times
+    have exponential distribution.
     """
 
     time_in_system: float = 0
@@ -29,19 +33,20 @@ class Markovian:
 
     def get_service_time(self) -> float:
         """
-        Description (TODO)
+        Generating exponentially distributed service time
         """
         return random.expovariate(self.mu)
 
     def get_entry_time(self) -> float:
         """
-        Description (TODO)
+        Generating exponentially distributed entry time
         """
         return random.expovariate(self.lmbda)
 
     def _generate_entries(self, number_of_entries) -> None:
         """
-        Description (TODO)
+        Generating all entries depending on entered
+        number of queries
         """
 
         last_entry = 0
@@ -53,7 +58,7 @@ class Markovian:
 
     def run(self, number_of_queries: int) -> Dict[str, Union[float, List[float]]]:
         """
-        Description (TODO)
+        The main function that runs the simulation of a queue
         """
 
         metrics = dict()
