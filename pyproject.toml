@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "mm1-queue"
+version = "0.1.0"
+description = ""
+authors = ["Ailurus1 <kozulin02@yandex.ru>"]
+readme = "README.md"
+packages = [{include = "mm1_queue"}]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+numpy = "1.22.1"
+plotly = "5.1.0"
+kaleido = "0.2.1"
+tqdm = "4.63.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

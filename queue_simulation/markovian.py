@@ -67,9 +67,10 @@ class Markovian:
 
         self.exit_times = [0] * number_of_queries
         self.shift_times = [0] * number_of_queries
+        self.shift_times[0] = self.entry_times[0]
         self.exit_times[0] = self.entry_times[0] + self.get_service_time()
 
-        for i in range(1, number_of_queries - 1):
+        for i in range(1, number_of_queries):
             service_time = self.get_service_time()
             self.shift_times[i] = max(
                 self.exit_times[i - 1], self.entry_times[i])
@@ -92,13 +93,13 @@ class Markovian:
                 self.system_times[j] += (j - self.entry_times[i])
 
         metrics["Average Total Queries in System Per Moment"] = [
-            sum(self.total_sizes[:i]) / (i + 1) for i in range(1, total_moments)]
+            sum(self.total_sizes[:i]) / i for i in range(1, total_moments + 1)]
         metrics["Average Queue Size Per Moment"] = [
-            sum(self.queue_sizes[:i]) / (i + 1) for i in range(1, total_moments)]
+            sum(self.queue_sizes[:i]) / i for i in range(1, total_moments + 1)]
         metrics["Average System Time Per Moment"] = [
-            sum(self.system_times[:i]) / (i + 1) for i in range(1, total_moments)]
+            sum(self.system_times[:i]) / i for i in range(1, total_moments + 1)]
         metrics["Average Waiting Time Per Moment"] = [
-            sum(self.waiting_times[:i]) / (i + 1) for i in range(1, total_moments)]
+            sum(self.waiting_times[:i]) / i for i in range(1, total_moments + 1)]
         metrics["Average Queue Size"] = sum(self.queue_sizes) / total_moments
         metrics["Average Total Queries"] = sum(
             self.total_sizes) / total_moments
