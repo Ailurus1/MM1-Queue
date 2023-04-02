@@ -1,9 +1,9 @@
 # $M/M/1/\infty$
-Single-threaded implementation of the main mechanisms of the [$M/M/1/\infty$](https://en.wikipedia.org/wiki/M/M/1_queue) queue from [queueing theory](https://en.wikipedia.org/wiki/Queueing_theory) with some small provided experiments showing basic metrics obtained during work of the system with various parameters.
+Single-threaded implementation of the main mechanisms of the $M/M/1/\infty$ [queue](https://en.wikipedia.org/wiki/M/M/1_queue) from queueing theory with some small provided experiments showing basic metrics obtained during work of the system with various parameters.
 
 ---
 ```bash
-pip install requirements.txt
+pip install -r requirements.txt
 ```
 or using `poetry`
 ```bash
