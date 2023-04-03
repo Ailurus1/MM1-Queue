@@ -7,7 +7,7 @@ pip install -r requirements.txt
 ```
 or using `poetry`
 ```bash
-poetry init
+poetry install
 ```
 and then in Python code
 ```Python
